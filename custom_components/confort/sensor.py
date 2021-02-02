@@ -37,10 +37,12 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
 })
 
 SENSOR_TYPES = {
-    'absolutehumidity': [DEVICE_CLASS_HUMIDITY, 'Absolute Humidity', 'g/m³'],
-    'heatindex': [DEVICE_CLASS_TEMPERATURE, 'Heat Index', '°C'],
-    'dewpoint': [DEVICE_CLASS_TEMPERATURE, 'Dew Point', '°C'],
-    'perception': [None, 'Thermal Perception', None],
+    'umidita_assoluta': [DEVICE_CLASS_HUMIDITY, 'Umidità assoluta', 'g/m³'],
+    'indice_di_calore': [DEVICE_CLASS_TEMPERATURE, 'Indice di Calore', '°C'],
+    'punto_di_rugiada': [DEVICE_CLASS_TEMPERATURE, 'Punto di Rugiada', '°C'],
+    'percepita': [None, 'Temperatura Percepita', None],
+    'punto_di_congelamento': [DEVICE_CLASS_TEMPERATURE, 'Punto di congelamento', '°C'],	
+    'livello_di_rischio': [None, 'Livello di Rischio', None],
 }
 
 async def async_setup_platform(hass, config, async_add_entities,
@@ -126,7 +128,7 @@ class SensorThermalComfort(Entity):
 
         self.async_schedule_update_ha_state(True)
 
-    def computeDewPoint(self, temperature, humidity):
+    def computePunto_Di_Rugiada(self, temperature, humidity):
         """http://wahiduddin.net/calc/density_algorithms.htm"""
         A0 = 373.15 / (273.15 + temperature)
         SUM = -7.90298 * (A0 - 1)
@@ -147,7 +149,7 @@ class SensorThermalComfort(Entity):
         """fahrenheit to celsius"""
         return (fahrenheit - 32.0) / 1.8
 
-    def computeHeatIndex(self, temperature, humidity):
+    def computeIndice_Di_Calore(self, temperature, humidity):
         """http://www.wpc.ncep.noaa.gov/html/heatindex_equation.shtml"""
         fahrenheit = self.toFahrenheit(temperature)
         hi = 0.5 * (fahrenheit + 61.0 + ((fahrenheit - 68.0) * 1.2) + (humidity * 0.094));
@@ -169,26 +171,26 @@ class SensorThermalComfort(Entity):
 
         return round(self.toCelsius(hi), 2)
 
-    def computePerception(self, temperature, humidity):
+    def computePercepita(self, temperature, humidity):
         """https://en.wikipedia.org/wiki/Dew_point"""
-        dewPoint = self.computeDewPoint(temperature, humidity)
-        if dewPoint < 10:
+        punto_di_rugiada = self.computePunto_Di_Rugiada(temperature, humidity)
+        if punto_di_rugiada < 10:
             return "Secco per alcuni"
-        elif dewPoint < 13:
+        elif punto_di_rugiada < 13:
             return "Ottimale"
-        elif dewPoint < 16:
+        elif punto_di_rugiada < 16:
             return "Confortevole"
-        elif dewPoint < 18:
+        elif punto_di_rugiada < 18:
             return "Un po' umido"
-        elif dewPoint < 21:
+        elif punto_di_rugiada < 21:
             return "Sgradevole per a maggior parte"
-        elif dewPoint < 24:
+        elif punto_di_rugiada < 24:
             return "Fastidioso"
-        elif dewPoint < 26:
+        elif punto_di_rugiada < 26:
             return "Estremamente fastidioso"
         return "Pericoloso per la salute"
 
-    def computeAbsoluteHumidity(self, temperature, humidity):
+    def computeUmidita_Assoluta(self, temperature, humidity):
         """https://carnotcycle.wordpress.com/2012/08/04/how-to-convert-relative-humidity-to-absolute-humidity/"""
         absTemperature = temperature + 273.15;
         absHumidity = 6.112;
@@ -243,14 +245,14 @@ class SensorThermalComfort(Entity):
         """Update the state."""
         value = None
         if self._temperature and self._humidity:
-            if self._sensor_type == "dewpoint":
-                value = self.computeDewPoint(self._temperature, self._humidity)
-            if self._sensor_type == "heatindex":
-                value = self.computeHeatIndex(self._temperature, self._humidity)
-            elif self._sensor_type == "perception":
-                value = self.computePerception(self._temperature, self._humidity)
-            elif self._sensor_type == "absolutehumidity":
-                value = self.computeAbsoluteHumidity(self._temperature, self._humidity)
+            if self._sensor_type == "punto_di_rugiada":
+                value = self.computePunto_Di_Rugiada(self._temperature, self._humidity)
+            if self._sensor_type == "indice_di_calore":
+                value = self.computeIndice_Di_Calore(self._temperature, self._humidity)
+            elif self._sensor_type == "percepita":
+                value = self.computePercepita(self._temperature, self._humidity)
+            elif self._sensor_type == "umidita_assoluta":
+                value = self.computeUmidita_Assoluta(self._temperature, self._humidity)
             elif self._sensor_type == "comfortratio":
                 value = "comfortratio"
 
