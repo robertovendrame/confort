@@ -1,0 +1,8 @@
+{
+  "domain": "confort",
+  "name": "Confort",
+  "documentation": "https://github.com/robertovendrame/confort/blob/master/README.md",
+  "dependencies": [],
+  "codeowners": ["@robertovendrame"],
+  "requirements": []
+}

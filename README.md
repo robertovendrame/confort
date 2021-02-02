@@ -1,24 +1,24 @@
-# confort
-Thermal Comfort sensor for HA (absolute humidity, heat index, dew point, thermal perception)
+# Confort
+Sensori di confort per HA (umidità assoluta, indice di calore, punto di rugiada, temperatura percepita)
 
-## Usage
+## Utilizzo
 
-To use, add the following to your `configuration.yaml` file:
+Per utilizzarlo aggiungere la configurazione sul file`configuration.yaml` :
 
 ```
 sensor:
-  - platform: thermal_comfort
+  - platform: confort
     sensors:
-      livingroom:
-        friendly_name: Living Room
-        temperature_sensor: sensor.temperature_livingroom
-        humidity_sensor: sensor.humidity_livingroom
-      bedroom:
+      soggiorno:
+        friendly_name: Soggiorno
+        temperature_sensor: sensor.temperature_soggiorno
+        humidity_sensor: sensor.humidity_soggiorno
+      camera_da_letto:
         ...
 
 ```
 
-#### Required
+#### Requisiti
 - temperature_sensor
 - humidity_sensor
 
