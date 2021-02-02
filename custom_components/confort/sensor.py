@@ -41,7 +41,7 @@ SENSOR_TYPES = {
     'indice_di_calore': [DEVICE_CLASS_TEMPERATURE, 'Indice di Calore', '°C'],
     'punto_di_rugiada': [DEVICE_CLASS_TEMPERATURE, 'Punto di Rugiada', '°C'],
     'percepita': [None, 'Temperatura Percepita', None],
-    'punto_di_congelamento': [DEVICE_CLASS_TEMPERATURE, 'Punto di congelamento', '°C'],	
+    'punto_di_congelamento': [DEVICE_CLASS_TEMPERATURE, 'Punto di Congelamento', '°C'],	
     'livello_di_rischio': [None, 'Livello di Rischio', None],
 }
 
@@ -141,6 +141,14 @@ class SensorThermalComfort(Entity):
         Td = (241.88 * Td) / (17.558 - Td)
         return round(Td, 2)
 
+    def computePunto_Di_Congelamento(self, temperature, humidity):
+        """ https://pon.fr/dzvents-alerte-givre-et-calcul-humidite-absolue/ """
+        punto_di_rugiada = self.computePunto_Di_Rugiada(temperature, humidity)
+        T = temperature + 273.15
+        Td = punto_di_rugiada + 273.15
+        return round((Td + (2671.02 /((2954.61/T) + 2.193665 * math.log(T) - 13.3448))-T)-273.15,2)
+
+
     def toFahrenheit(self, celsius):
         """celsius to fahrenheit"""
         return 1.8 * celsius + 32.0
@@ -189,6 +197,20 @@ class SensorThermalComfort(Entity):
         elif punto_di_rugiada < 26:
             return "Estremamente fastidioso"
         return "Pericoloso per la salute"
+
+    def computeRiskLevel(self, temperature, humidity):
+        """ """
+        thresholdUmidita_Assoluta = 2.8
+        punto_di_rugiada = self.computePunto_Di_Rugiada(temperature, humidity)
+        umidita_assoluta = self.computeUmidita_Assoluta(temperature, humidity)
+        punto_di_congelamento = self.computePunto_Di_Congelamento(temperature, humidity)
+        if temperature <= 1 and punto_di_congelamento <= 0 and umidita_assoluta < thresholdUmidita_Assoluta:
+            return 1 # Ghiaccio improbabile nonostante la temperatura
+        elif temperature <= 4 and punto_di_congelamento <= 0.5 and umidita_assoluta > thresholdUmidita_Assoluta:
+            return 2 # Ghiaccio improbabile nonostante la temperatura
+        elif temperature <= 1 and punto_di_congelamento <= 0 and umidita_assoluta > thresholdUmidita_Assoluta:
+            return 3 # Presenza di ghiaccio
+        return 0 # Nessun rischio di ghiaccio
 
     def computeUmidita_Assoluta(self, temperature, humidity):
         """https://carnotcycle.wordpress.com/2012/08/04/how-to-convert-relative-humidity-to-absolute-humidity/"""
@@ -253,8 +275,10 @@ class SensorThermalComfort(Entity):
                 value = self.computePercepita(self._temperature, self._humidity)
             elif self._sensor_type == "umidita_assoluta":
                 value = self.computeUmidita_Assoluta(self._temperature, self._humidity)
-            elif self._sensor_type == "comfortratio":
-                value = "comfortratio"
+            elif self._sensor_type == "punto_di_congelamento":
+                value = self.computePunto_Di_Congelamento(self._temperature, self._humidity)
+            elif self._sensor_type == "livello_di_rischio":
+                value = self.computeLivello_Di_Rischio(self._temperature, self._humidity)
 
         self._state = value
         self._device_state_attributes[ATTR_TEMPERATURE] = self._temperature
