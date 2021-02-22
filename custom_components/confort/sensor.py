@@ -42,7 +42,7 @@ SENSOR_TYPES = {
     'punto_di_rugiada': [DEVICE_CLASS_TEMPERATURE, 'Punto di Rugiada', '°C'],
     'percepita': [None, 'Temperatura Percepita', None],
     'punto_di_congelamento': [DEVICE_CLASS_TEMPERATURE, 'Punto di Congelamento', '°C'],	
-    'livello_di_rischio': [None, 'Livello di Rischio', None],
+##    'livello_di_rischio': [None, 'Livello di Rischio', None],
 }
 
 async def async_setup_platform(hass, config, async_add_entities,
@@ -277,8 +277,8 @@ class SensorThermalComfort(Entity):
                 value = self.computeUmidita_Assoluta(self._temperature, self._humidity)
             elif self._sensor_type == "punto_di_congelamento":
                 value = self.computePunto_Di_Congelamento(self._temperature, self._humidity)
-            elif self._sensor_type == "livello_di_rischio":
-                value = self.computeLivello_Di_Rischio(self._temperature, self._humidity)
+##            elif self._sensor_type == "livello_di_rischio":
+##                value = self.computeLivello_Di_Rischio(self._temperature, self._humidity)
 
         self._state = value
         self._device_state_attributes[ATTR_TEMPERATURE] = self._temperature
