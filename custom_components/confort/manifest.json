@@ -4,5 +4,6 @@
   "documentation": "https://github.com/robertovendrame/confort/blob/master/README.md",
   "dependencies": [],
   "codeowners": ["@robertovendrame"],
-  "requirements": []
+  "requirements": [],
+  "version": ["3.0.0"]
 }
